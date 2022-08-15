@@ -4,10 +4,11 @@
   "description": "RESTful API with Node.js and PostgreSQL",
   "main": "index.js",
   "scripts": {
-    "server": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Haziq Musa",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",

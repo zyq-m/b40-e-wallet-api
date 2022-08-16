@@ -9,9 +9,9 @@ const pool = new Pool({
   // connect db to application
   connectionString: isProduction ? process.env.DATABASE_URL : connectionString,
   // comment out ssl code if run in development
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  // ssl: {
+  //   rejectUnauthorized: false,
+  // },
 });
 
 module.exports = pool;

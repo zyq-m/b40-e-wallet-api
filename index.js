@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
 const app = express();
 const cors = require("cors");
+let port = process.env.PORT || 3000;
 
 const authRouter = require("./routes/auth");
 const studentRouter = require("./routes/students");
@@ -38,6 +39,6 @@ app.use(studentRouter);
 app.use(cafeRouter);
 app.use(transactionRouter);
 
-app.listen(3000, () => {
-  console.log("app running on port 3000");
+app.listen(port, () => {
+  console.log(`app running on port ${port}`);
 });

@@ -35,9 +35,9 @@ const authenticateToken = (request, response, next) => {
 
 app.use(authRouter);
 app.use(authenticateToken);
-app.use(studentRouter);
-app.use(cafeRouter);
-app.use(transactionRouter);
+app.use("/api", studentRouter);
+app.use("/api", cafeRouter);
+app.use("/api", transactionRouter);
 
 app.listen(port, () => {
   console.log(`app running on port ${port}`);

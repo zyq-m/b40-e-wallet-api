@@ -124,7 +124,7 @@ instance
   });
 ```
 
-### 4. Put `api/students/:id/wallet`
+### 4. Put `/api/students/:id/wallet`
 
 Update wallet ammount
 
@@ -147,7 +147,7 @@ instance
   });
 ```
 
-### 5. Put `api/students/:id/suspend`
+### 5. Put `/api/students/:id/suspend`
 
 Suspend status student
 

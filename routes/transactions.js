@@ -1,5 +1,4 @@
 const express = require("express");
-const { route } = require("./auth");
 const router = express.Router();
 const pool = require("./query");
 
@@ -23,7 +22,35 @@ const pay = (request, response) => {
   );
 };
 
+const getSenderTransaction = (req, res) => {
+  const id = req.params.id;
+
+  pool.query(
+    "SELECT * FROM transactions where sender = $1 order by created_at desc",
+    [id],
+    (error, results) => {
+      if (error) return res.status(500);
+      return res.status(200).json(results.rows);
+    }
+  );
+};
+
+const getRecipientTransaction = (req, res) => {
+  const id = req.params.id;
+
+  pool.query(
+    "SELECT * FROM transactions where recipient = $1 order by created_at desc",
+    [id],
+    (error, results) => {
+      if (error) return res.status(500);
+      return res.status(200).json(results.rows);
+    }
+  );
+};
+
 router.get("/transactions", getTransactions);
+router.get("/transactions/students/:id", getSenderTransaction);
+router.get("/transactions/cafe/:id", getRecipientTransaction);
 router.post("/transactions/cafe/:id", pay);
 
 module.exports = router;

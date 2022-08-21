@@ -12,14 +12,21 @@ const getTransactions = (request, response) => {
 const pay = (request, response) => {
   const id = request.params.id;
   const { sender, amount } = request.body;
-  pool.query(
-    "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
-    [sender, id, amount],
-    (error, results) => {
-      if (error) return response.status(500).send(error);
-      return response.status(201).json(results.rows);
-    }
-  );
+
+  pool
+    .query(
+      "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
+      [sender, id, amount]
+    )
+    .then(res => {
+      pool
+        .query(
+          "UPDATE students SET wallet_amount = (SELECT wallet_amount WHERE matric_no = $1) - $2 WHERE matric_no = $3",
+          [sender, amount, sender]
+        )
+        .then(() => response.status(201).json(res.rows));
+    })
+    .catch(err => response.status(500).send(err));
 };
 
 const getSenderTransaction = (req, res) => {

@@ -46,7 +46,7 @@ const getRecipientTransaction = (req, res) => {
   const id = req.params.id;
 
   pool.query(
-    "SELECT * FROM transactions where recipient = $1 order by created_at desc",
+    "SELECT * FROM transactions WHERE recipient = $1 AND claimed = false ORDER BY created_at desc",
     [id],
     (error, results) => {
       if (error) return res.status(500);

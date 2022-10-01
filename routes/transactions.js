@@ -6,7 +6,8 @@ const getTransactions = (request, response) => {
   const sql = `
     SELECT * FROM transactions 
     INNER JOIN students ON students.matric_no = transactions.sender
-    INNER JOIN cafe_owners on cafe_owners.username = transactions.recipient`;
+    INNER JOIN cafe_owners on cafe_owners.username = transactions.recipient
+    ORDER BY created_at DESC`;
 
   pool.query(sql, (error, results) => {
     if (error) return response.status(500);
@@ -60,7 +61,7 @@ const getSenderTransaction = (req, res) => {
     INNER JOIN students as s ON s.matric_no = t.sender
     INNER JOIN cafe_owners as c on c.username = t.recipient
     WHERE t.sender = $1
-    ORDER BY t.created_at`;
+    ORDER BY t.created_at DESC`;
 
   pool.query(sql, [id], (error, results) => {
     if (error) return res.status(500);
@@ -96,7 +97,7 @@ const getRecipientTransaction = (req, res) => {
     INNER JOIN students as s ON s.matric_no = t.sender
     INNER JOIN cafe_owners as c on c.username = t.recipient
     WHERE t.recipient = $1
-    ORDER BY t.created_at`;
+    ORDER BY t.created_at DESC`;
 
   pool.query(sql, [id], (error, results) => {
     if (error) return res.status(500);

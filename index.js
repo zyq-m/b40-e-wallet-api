@@ -1,24 +1,76 @@
 require("dotenv").config();
 
 const express = require("express");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
-const app = express();
 const cors = require("cors");
-let port = process.env.PORT || 3000;
 
 const authRouter = require("./routes/auth");
 const studentRouter = require("./routes/students");
 const cafeRouter = require("./routes/cafeOwners");
-const transactionRouter = require("./routes/transactions");
+const { transactionRouter } = require("./routes/transactions");
+const feedbackRouter = require("./routes/feedback");
+
+const {
+  getSenderTransaction,
+  getRecipientTransaction,
+  pay,
+} = require("./sqlQuey/transactionQuery");
+const { getStudent, getCafe } = require("./sqlQuey/profile");
+
+const app = express();
+const httpServer = createServer(app);
+let port = process.env.PORT || 3000;
+const io = new Server(httpServer, {
+  cors: {
+    origin: [process.env.LOCAL_WEB_ORIGIN, process.env.LOCAL_MOBILE_ORIGIN], // client url
+  },
+});
 
 app.use(cors());
+
 app.use(bodyParser.json());
+
 app.use(
   bodyParser.urlencoded({
     extended: true,
   })
 );
+
+io.on("connect", socket => {
+  // recieve id to get transaction
+  socket.on("get_transaction_student", async id => {
+    return getSenderTransaction(id).then(res => {
+      io.emit("set_transaction_student", res);
+    });
+  });
+
+  socket.on("get_transaction_cafe", async id => {
+    return getRecipientTransaction(id).then(res => {
+      io.emit("set_transaction_cafe", res);
+    });
+  });
+
+  socket.on("get_student", async id => {
+    return getStudent(id).then(res => {
+      io.emit("set_student", res);
+    });
+  });
+
+  socket.on("get_cafe", async id => {
+    return getCafe(id).then(res => {
+      io.emit("set_cafe", res);
+    });
+  });
+
+  socket.on("pay", async (id, sender, amount) => {
+    return pay(id, sender, amount).then(res => {
+      io.emit("pay_detail", res);
+    });
+  });
+});
 
 const authenticateToken = (request, response, next) => {
   const authHeader = request.headers["authorization"];
@@ -38,7 +90,8 @@ app.use(authenticateToken);
 app.use("/api", studentRouter);
 app.use("/api", cafeRouter);
 app.use("/api", transactionRouter);
+app.use("/api", feedbackRouter);
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`app running on port ${port}`);
 });

@@ -40,4 +40,17 @@ const pay = (id, sender, amount) => {
     });
 };
 
-module.exports = { getSenderTransaction, pay, getRecipientTransaction };
+const approved = (transactionId, value) => {
+  const sql = `UPDATE transactions 
+    SET approved_by_recipient = $1 
+    WHERE transaction_id = $2`;
+
+  return pool.query(sql, [value, transactionId]).then(data => data.rowCount);
+};
+
+module.exports = {
+  getSenderTransaction,
+  pay,
+  getRecipientTransaction,
+  approved,
+};

@@ -1,6 +1,7 @@
 const express = require("express");
 const transactionRouter = express.Router();
 const pool = require("./query");
+const { approved } = require("../sqlQuey/transactionQuery");
 
 const getTransactions = (request, response) => {
   const sql = `
@@ -115,6 +116,7 @@ const getRecipientTransaction = (req, res) => {
         amount,
         student_name,
         cafe_name,
+        approved_by_recipient,
       }) => ({
         transaction_id: transaction_id,
         sender: sender,
@@ -123,6 +125,7 @@ const getRecipientTransaction = (req, res) => {
         amount: amount,
         student_name: student_name,
         cafe_name: cafe_name,
+        approved: approved_by_recipient,
       })
     );
 
@@ -130,9 +133,24 @@ const getRecipientTransaction = (req, res) => {
   });
 };
 
+const checked = (req, res) => {
+  const { transactionId, value } = req.body;
+  if (!transactionId) return res.sendStatus(400);
+  approved(transactionId, value)
+    .then(() => {
+      return res.status(200).send({ message: "Payment status updated" });
+    })
+    .catch(err => {
+      return res
+        .status(404)
+        .send({ message: "Transaction Id not found", detail: err });
+    });
+};
+
 transactionRouter.get("/transactions", getTransactions);
 transactionRouter.get("/transactions/students/:id", getSenderTransaction);
 transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
 transactionRouter.post("/transactions/cafe/:id", pay);
+transactionRouter.put("/transactions/approved", checked);
 
 module.exports = { transactionRouter };

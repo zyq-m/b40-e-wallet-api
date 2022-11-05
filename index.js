@@ -40,7 +40,6 @@ app.use(
 );
 
 io.on("connect", socket => {
-  console.log("conneted");
   // recieve id to get transaction
   socket.on("get_transaction_student", async id => {
     return getSenderTransaction(id).then(res => {

@@ -25,7 +25,7 @@ const httpServer = createServer(app);
 let port = process.env.PORT || 3000;
 const io = new Server(httpServer, {
   cors: {
-    origin: [process.env.LOCAL_WEB_ORIGIN, process.env.LOCAL_MOBILE_ORIGIN], // client url
+    origin: "*", // accept all client origin
   },
 });
 
@@ -40,6 +40,7 @@ app.use(
 );
 
 io.on("connect", socket => {
+  console.log("conneted");
   // recieve id to get transaction
   socket.on("get_transaction_student", async id => {
     return getSenderTransaction(id).then(res => {

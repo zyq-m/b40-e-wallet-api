@@ -11,21 +11,23 @@ const {
 } = require("../sqlQuey/refreshToken");
 
 const login = (response, sql, id, password, user) => {
-  pool.query(sql, [id, password], (error, results) => {
-    if (error) return response.sendStatus(500);
-    if (results.rowCount === 0) return response.sendStatus(404);
+  pool
+    .query(sql, [id, password])
+    .then(results => {
+      if (results.rowCount === 0) return response.sendStatus(404);
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
+      const accessToken = generateAccessToken(user);
+      const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
 
-    // * store token
-    createRefreshToken(refreshToken);
+      // * store token
+      createRefreshToken(refreshToken);
 
-    return response.json({
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    });
-  });
+      return response.json({
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      });
+    })
+    .catch(() => response.sendStatus(500));
 };
 
 const loginStudents = (request, response) => {

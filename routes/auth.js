@@ -82,11 +82,15 @@ router.post("/token", (req, res) => {
 });
 
 router.delete("/logout", (req, res) => {
-  const refreshToken = req.body.token;
+  const { refreshToken } = req.body;
   // * remove token
-  removeRefreshToken(refreshToken);
+  removeRefreshToken(refreshToken)
+    .then(() => {
+      if (!refreshToken) return res.sendStatus(400);
 
-  return res.sendStatus(204);
+      return res.sendStatus(204);
+    })
+    .catch(() => res.sendStatus(500));
 });
 
 module.exports = router;

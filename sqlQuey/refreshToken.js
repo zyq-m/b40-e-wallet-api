@@ -12,7 +12,7 @@ const getRefreshToken = async token => {
 
 const removeRefreshToken = async token => {
   const sql = `DELETE FROM refresh_token WHERE token = $1`;
-  return await pool.query(sql, [token]).then(res => res.rows);
+  return await pool.query(sql, [token]).then(res => res);
 };
 
 module.exports = { createRefreshToken, removeRefreshToken, getRefreshToken };

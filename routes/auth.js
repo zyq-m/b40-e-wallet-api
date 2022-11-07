@@ -4,79 +4,58 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const pool = require("./query");
-let refreshTokens = [];
+const {
+  createRefreshToken,
+  getRefreshToken,
+  removeRefreshToken,
+} = require("../sqlQuey/refreshToken");
+
+const login = (response, sql, id, password, user) => {
+  pool.query(sql, [id, password], (error, results) => {
+    if (error) return response.sendStatus(500);
+    if (results.rowCount === 0) return response.sendStatus(404);
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
+
+    // * store token
+    createRefreshToken(refreshToken);
+
+    return response.json({
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
+  });
+};
 
 const loginStudents = (request, response) => {
   const { matric_no, password } = request.body;
   const user = { user: matric_no };
+  const sql =
+    "SELECT matric_no FROM students WHERE matric_no = $1 AND ic_no = $2";
 
-  pool.query(
-    "SELECT matric_no FROM students WHERE matric_no = $1 AND ic_no = $2",
-    [matric_no, password],
-    (error, results) => {
-      if (error) return response.sendStatus(500);
-      if (results.rowCount === 0) return response.sendStatus(404);
-
-      const accessToken = generateAccessToken(user);
-      const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
-      refreshTokens.push(refreshToken);
-
-      return response.json({
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      });
-    }
-  );
+  login(response, sql, matric_no, password, user);
 };
 
 const loginCafe = (request, response) => {
   const { username, password } = request.body;
   const user = { user: username };
+  const sql =
+    "SELECT username FROM cafe_owners WHERE username = $1 AND password = $2";
 
-  pool.query(
-    "SELECT username FROM cafe_owners WHERE username = $1 AND password = $2",
-    [username, password],
-    (error, results) => {
-      if (error) return response.sendStatus(500);
-      if (results.rowCount === 0) return response.sendStatus(404);
-
-      const accessToken = generateAccessToken(user);
-      const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
-      refreshTokens.push(refreshToken);
-
-      return response.json({
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      });
-    }
-  );
+  login(response, sql, username, password, user);
 };
 
 const loginAdmin = (request, response) => {
   const { email, password } = request.body;
   const user = { user: email };
+  const sql = "SELECT email FROM admin_b40 WHERE email = $1 AND password = $2";
 
-  pool.query(
-    "SELECT email FROM admin_b40 WHERE email = $1 AND password = $2",
-    [email, password],
-    (error, results) => {
-      if (error) return response.sendStatus(500);
-      if (results.rowCount === 0) return response.sendStatus(404);
-
-      const accessToken = generateAccessToken(user);
-      const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
-      refreshTokens.push(refreshToken);
-
-      return response.json({
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      });
-    }
-  );
+  login(response, sql, email, password, user);
 };
 
 const generateAccessToken = user =>
-  jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30min" });
+  jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30s" });
 
 router.post("/students/login", loginStudents);
 
@@ -89,7 +68,8 @@ router.post("/token", (req, res) => {
 
   if (refreshToken == null) return res.sendStatus(401);
 
-  if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
+  // * if no token
+  if (!getRefreshToken(refreshToken)) return res.sendStatus(403);
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) return res.sendStatus(403);
@@ -101,7 +81,8 @@ router.post("/token", (req, res) => {
 
 router.delete("/logout", (req, res) => {
   const refreshToken = req.body.token;
-  refreshTokens = refreshTokens.filter(token => token !== refreshToken);
+  // * remove token
+  removeRefreshToken(refreshToken);
 
   return res.sendStatus(204);
 });

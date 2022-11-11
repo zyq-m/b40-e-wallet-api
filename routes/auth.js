@@ -57,7 +57,7 @@ const loginAdmin = (request, response) => {
 };
 
 const generateAccessToken = user =>
-  jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30s" });
+  jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30m" });
 
 router.post("/students/login", loginStudents);
 

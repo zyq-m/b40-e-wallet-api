@@ -81,13 +81,13 @@ const getSenderTransaction = (req, res) => {
         student_name,
         cafe_name,
       }) => ({
-        transaction_id: transaction_id,
-        sender: sender,
-        recipient: recipient,
-        created_at: created_at,
-        amount: amount,
-        student_name: student_name,
-        cafe_name: cafe_name,
+        transaction_id,
+        sender,
+        recipient,
+        created_at,
+        amount,
+        student_name,
+        cafe_name,
       })
     );
 
@@ -118,14 +118,14 @@ const getRecipientTransaction = (req, res) => {
         cafe_name,
         approved_by_recipient,
       }) => ({
-        transaction_id: transaction_id,
-        sender: sender,
-        recipient: recipient,
-        created_at: created_at,
-        amount: amount,
-        student_name: student_name,
-        cafe_name: cafe_name,
-        approved: approved_by_recipient,
+        transaction_id,
+        sender,
+        recipient,
+        created_at,
+        amount,
+        student_name,
+        cafe_name,
+        approved_by_recipient,
       })
     );
 

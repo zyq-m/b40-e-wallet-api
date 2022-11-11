@@ -63,8 +63,12 @@ io.on("connect", socket => {
 
   // recieve id to get transaction
   socket.on("get_transaction_student", async id => {
-    const transaction = await getSenderTransaction(id);
-    io.emit("set_transaction_student", transaction);
+    const user = getUser(id);
+    const transaction = getSenderTransaction(id);
+
+    Promise.all([user, transaction]).then(res => {
+      return io.to(res[0].socket_id).emit("set_transaction_student", res[1]);
+    });
   });
 
   socket.on("get_transaction_cafe", async id => {
@@ -74,13 +78,21 @@ io.on("connect", socket => {
   });
 
   socket.on("get_student", async id => {
-    const res = await getStudent(id);
-    io.emit("set_student", res);
+    const profile = getStudent(id);
+    const user = getUser(id);
+
+    Promise.all([user, profile]).then(res => {
+      return io.to(res[0].socket_id).emit("set_student", res[1]);
+    });
   });
 
   socket.on("get_cafe", async id => {
-    const res = await getCafe(id);
-    io.emit("set_cafe", res);
+    const cafe = getCafe(id);
+    const user = getUser(id);
+
+    Promise.all([user, cafe]).then(res => {
+      return io.to(res[0].socket_id).emit("set_cafe", res[1]);
+    });
   });
 
   socket.on("pay", async (id, sender, amount) => {

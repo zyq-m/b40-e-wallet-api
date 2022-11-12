@@ -1,6 +1,7 @@
 const express = require("express");
-const router = express.Router();
+const transactionRouter = express.Router();
 const pool = require("./query");
+const { approved } = require("../utils/transactionQuery");
 
 const getTransactions = (request, response) => {
   const sql = `
@@ -38,20 +39,24 @@ const pay = (request, response) => {
   const id = request.params.id;
   const { sender, amount } = request.body;
 
-  pool
-    .query(
-      "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
-      [sender, id, amount]
-    )
-    .then(res => {
-      pool
-        .query(
-          "UPDATE students SET wallet_amount = (SELECT wallet_amount WHERE matric_no = $1) - $2 WHERE matric_no = $3",
-          [sender, amount, sender]
-        )
-        .then(() => response.status(201).json(res.rows));
-    })
-    .catch(err => response.status(500).send(err));
+  if (amount) {
+    pool
+      .query(
+        "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
+        [sender, id, amount]
+      )
+      .then(res => {
+        pool
+          .query(
+            "UPDATE students SET wallet_amount = (SELECT wallet_amount WHERE matric_no = $1) - $2 WHERE matric_no = $3",
+            [sender, amount, sender]
+          )
+          .then(() => response.status(201).json(res.rows));
+      })
+      .catch(err => response.status(500).send(err));
+  } else {
+    return response.sendStatus(500);
+  }
 };
 
 const getSenderTransaction = (req, res) => {
@@ -76,13 +81,13 @@ const getSenderTransaction = (req, res) => {
         student_name,
         cafe_name,
       }) => ({
-        transaction_id: transaction_id,
-        sender: sender,
-        recipient: recipient,
-        created_at: created_at,
-        amount: amount,
-        student_name: student_name,
-        cafe_name: cafe_name,
+        transaction_id,
+        sender,
+        recipient,
+        created_at,
+        amount,
+        student_name,
+        cafe_name,
       })
     );
 
@@ -111,14 +116,16 @@ const getRecipientTransaction = (req, res) => {
         amount,
         student_name,
         cafe_name,
+        approved_by_recipient,
       }) => ({
-        transaction_id: transaction_id,
-        sender: sender,
-        recipient: recipient,
-        created_at: created_at,
-        amount: amount,
-        student_name: student_name,
-        cafe_name: cafe_name,
+        transaction_id,
+        sender,
+        recipient,
+        created_at,
+        amount,
+        student_name,
+        cafe_name,
+        approved_by_recipient,
       })
     );
 
@@ -126,9 +133,24 @@ const getRecipientTransaction = (req, res) => {
   });
 };
 
-router.get("/transactions", getTransactions);
-router.get("/transactions/students/:id", getSenderTransaction);
-router.get("/transactions/cafe/:id", getRecipientTransaction);
-router.post("/transactions/cafe/:id", pay);
+const checked = (req, res) => {
+  const { transactionId, value } = req.body;
+  if (!transactionId) return res.sendStatus(400);
+  approved(transactionId, value)
+    .then(() => {
+      return res.status(200).send({ message: "Payment status updated" });
+    })
+    .catch(err => {
+      return res
+        .status(404)
+        .send({ message: "Transaction Id not found", detail: err });
+    });
+};
 
-module.exports = router;
+transactionRouter.get("/transactions", getTransactions);
+transactionRouter.get("/transactions/students/:id", getSenderTransaction);
+transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
+transactionRouter.post("/transactions/cafe/:id", pay);
+transactionRouter.put("/transactions/approved", checked);
+
+module.exports = { transactionRouter };

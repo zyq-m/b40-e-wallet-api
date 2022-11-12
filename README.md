@@ -1,4 +1,4 @@
-# B40 API Documentation
+# eKupon API Documentation
 
 ## Kandungan
 

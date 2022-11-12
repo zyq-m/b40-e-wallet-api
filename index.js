@@ -17,8 +17,8 @@ const {
   getSenderTransaction,
   getRecipientTransaction,
   pay,
-} = require("./sqlQuey/transactionQuery");
-const { getStudent, getCafe } = require("./sqlQuey/profile");
+} = require("./utils/transactionQuery");
+const { getStudent, getCafe } = require("./utils/profile");
 const {
   addUser,
   getUser,

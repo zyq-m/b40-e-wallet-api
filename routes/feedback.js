@@ -1,7 +1,7 @@
 const express = require("express");
 const feedbackRouter = express.Router();
 
-const { sendFeedback, getFeedback } = require("../sqlQuey/feedbackQuery");
+const { sendFeedback, getFeedback } = require("../utils/feedbackQuery");
 
 const onFeedback = (req, res) => {
   const { id, title, description } = req.body;

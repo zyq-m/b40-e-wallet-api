@@ -1,7 +1,7 @@
 const express = require("express");
 const transactionRouter = express.Router();
 const pool = require("./query");
-const { approved } = require("../sqlQuey/transactionQuery");
+const { approved } = require("../utils/transactionQuery");
 
 const getTransactions = (request, response) => {
   const sql = `

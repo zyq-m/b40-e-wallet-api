@@ -8,7 +8,7 @@ const {
   createRefreshToken,
   getRefreshToken,
   removeRefreshToken,
-} = require("../sqlQuey/refreshToken");
+} = require("../utils/refreshToken");
 
 const login = (response, sql, id, password, user) => {
   pool

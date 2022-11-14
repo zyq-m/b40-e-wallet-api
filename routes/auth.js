@@ -51,7 +51,7 @@ const loginCafe = (request, response) => {
 const loginAdmin = (request, response) => {
   const { email, password } = request.body;
   const user = { user: email };
-  const sql = "SELECT email FROM admin WHERE email = $1 AND password = $2";
+  const sql = "SELECT email FROM admin_b40 WHERE email = $1 AND password = $2";
 
   login(response, sql, email, password, user);
 };

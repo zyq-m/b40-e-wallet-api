@@ -34,7 +34,7 @@ const loginStudents = (request, response) => {
   const { matric_no, password } = request.body;
   const user = { user: matric_no };
   const sql =
-    "SELECT matric_no FROM students WHERE matric_no = $1 AND ic_no = $2";
+    "SELECT matric_no FROM students WHERE matric_no = $1 AND password = $2";
 
   login(response, sql, matric_no, password, user);
 };

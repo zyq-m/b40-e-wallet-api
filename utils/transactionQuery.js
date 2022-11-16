@@ -1,6 +1,6 @@
 const pool = require("../routes/query");
 
-const getSenderTransaction = id => {
+const getSenderTransaction = async id => {
   const sql = `
       SELECT * FROM transactions as t
       INNER JOIN students as s ON s.matric_no = t.sender
@@ -9,10 +9,11 @@ const getSenderTransaction = id => {
       ORDER BY t.created_at DESC`;
   const values = [id];
 
-  return pool.query(sql, values).then(res => res.rows);
+  const res = await pool.query(sql, values);
+  return res.rows;
 };
 
-const getRecipientTransaction = id => {
+const getRecipientTransaction = async id => {
   const sql = `
     SELECT * FROM transactions as t 
     INNER JOIN students as s ON s.matric_no = t.sender
@@ -21,31 +22,29 @@ const getRecipientTransaction = id => {
     ORDER BY t.created_at DESC`;
   const values = [id];
 
-  return pool.query(sql, values).then(res => res.rows);
+  const res = await pool.query(sql, values);
+  return res.rows;
 };
 
-const pay = (id, sender, amount) => {
-  return pool
-    .query(
-      "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
-      [sender, id, amount]
-    )
-    .then(res => {
-      return pool
-        .query(
-          "UPDATE students SET wallet_amount = (SELECT wallet_amount WHERE matric_no = $1) - $2 WHERE matric_no = $3",
-          [sender, amount, sender]
-        )
-        .then(() => res.rows);
-    });
+const pay = async (id, sender, amount) => {
+  const res = await pool.query(
+    "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
+    [sender, id, amount]
+  );
+  await pool.query(
+    "UPDATE students SET wallet_amount = (SELECT wallet_amount WHERE matric_no = $1) - $2 WHERE matric_no = $3",
+    [sender, amount, sender]
+  );
+  return res.rows;
 };
 
-const approved = (transactionId, value) => {
+const approved = async (transactionId, value) => {
   const sql = `UPDATE transactions 
     SET approved_by_recipient = $1 
     WHERE transaction_id = $2`;
 
-  return pool.query(sql, [value, transactionId]).then(data => data.rowCount);
+  const data = await pool.query(sql, [value, transactionId]);
+  return data.rowCount;
 };
 
 module.exports = {

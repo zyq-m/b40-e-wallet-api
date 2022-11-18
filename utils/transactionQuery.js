@@ -48,7 +48,6 @@ const approved = async (transactionId, value) => {
 };
 
 const getRecipientTransactionByDateRange = async (recipient, from, to) => {
-  console.log(recipient, from, to);
   const sql = `SELECT transaction_id, amount, sender, s.student_name, 
   recipient, c.cafe_name, created_at, created_on, approved_by_recipient
   FROM transactions as t

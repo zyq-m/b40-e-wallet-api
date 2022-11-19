@@ -169,7 +169,6 @@ const dateRange = (request, res) => {
       return res.status(200).json(data);
     })
     .catch(err => {
-      console.log(err);
       return res.sendStatus(500);
     });
 };

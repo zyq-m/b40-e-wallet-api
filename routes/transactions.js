@@ -1,7 +1,10 @@
 const express = require("express");
 const transactionRouter = express.Router();
 const pool = require("./query");
-const { approved } = require("../utils/transactionQuery");
+const {
+  approved,
+  getRecipientTransactionByDateRange,
+} = require("../utils/transactionQuery");
 
 const getTransactions = (request, response) => {
   const sql = `
@@ -18,6 +21,7 @@ const getTransactions = (request, response) => {
         sender,
         recipient,
         created_at,
+        created_on,
         amount,
         student_name,
         cafe_name,
@@ -26,6 +30,7 @@ const getTransactions = (request, response) => {
         sender: sender,
         recipient: recipient,
         created_at: created_at,
+        created_on: created_on,
         amount: amount,
         student_name: student_name,
         cafe_name: cafe_name,
@@ -69,7 +74,9 @@ const getSenderTransaction = (req, res) => {
     ORDER BY t.created_at DESC`;
 
   pool.query(sql, [id], (error, results) => {
-    if (error) return res.status(500);
+    if (error) return res.sendStatus(500);
+
+    if (results.rowCount == 0) return res.sendStatus(404);
 
     const data = results.rows.map(
       ({
@@ -77,6 +84,7 @@ const getSenderTransaction = (req, res) => {
         sender,
         recipient,
         created_at,
+        created_on,
         amount,
         student_name,
         cafe_name,
@@ -85,6 +93,7 @@ const getSenderTransaction = (req, res) => {
         sender,
         recipient,
         created_at,
+        created_on,
         amount,
         student_name,
         cafe_name,
@@ -113,6 +122,7 @@ const getRecipientTransaction = (req, res) => {
         sender,
         recipient,
         created_at,
+        created_on,
         amount,
         student_name,
         cafe_name,
@@ -122,6 +132,7 @@ const getRecipientTransaction = (req, res) => {
         sender,
         recipient,
         created_at,
+        created_on,
         amount,
         student_name,
         cafe_name,
@@ -147,9 +158,25 @@ const checked = (req, res) => {
     });
 };
 
+const dateRange = (request, res) => {
+  const { id, from, to } = request.params;
+
+  getRecipientTransactionByDateRange(id, from, to)
+    .then(data => {
+      if (data.length == 0) {
+        return res.sendStatus(404);
+      }
+      return res.status(200).json(data);
+    })
+    .catch(err => {
+      return res.sendStatus(500);
+    });
+};
+
 transactionRouter.get("/transactions", getTransactions);
 transactionRouter.get("/transactions/students/:id", getSenderTransaction);
 transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
+transactionRouter.get("/transactions/cafe/range/:id/:from/:to", dateRange);
 transactionRouter.post("/transactions/cafe/:id", pay);
 transactionRouter.put("/transactions/approved", checked);
 

@@ -47,9 +47,23 @@ const approved = async (transactionId, value) => {
   return data.rowCount;
 };
 
+const getRecipientTransactionByDateRange = async (recipient, from, to) => {
+  const sql = `SELECT transaction_id, amount, sender, s.student_name, 
+  recipient, c.cafe_name, created_at, created_on, approved_by_recipient
+  FROM transactions as t
+  INNER JOIN students as s ON s.matric_no = t.sender
+  INNER JOIN cafe_owners as c on c.username = t.recipient
+  WHERE t.recipient = $1 AND t.created_on BETWEEN $2 AND $3
+  ORDER BY t.created_at DESC, t.created_on DESC`;
+
+  const data = await pool.query(sql, [recipient, from, to]);
+  return data.rows;
+};
+
 module.exports = {
   getSenderTransaction,
   pay,
   getRecipientTransaction,
   approved,
+  getRecipientTransactionByDateRange,
 };

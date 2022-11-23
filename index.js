@@ -12,6 +12,7 @@ const studentRouter = require("./routes/students");
 const cafeRouter = require("./routes/cafeOwners");
 const { transactionRouter } = require("./routes/transactions");
 const feedbackRouter = require("./routes/feedback");
+const passwordRouter = require("./routes/password");
 
 const {
   getSenderTransaction,
@@ -127,6 +128,7 @@ app.use("/api", studentRouter);
 app.use("/api", cafeRouter);
 app.use("/api", transactionRouter);
 app.use("/api", feedbackRouter);
+app.use("/api", passwordRouter);
 
 httpServer.listen(port, () => {
   console.log(`app running on port ${port}`);

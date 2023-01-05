@@ -97,8 +97,13 @@ io.on("connect", socket => {
   });
 
   socket.on("pay", async (id, sender, amount) => {
-    const res = await pay(id, sender, amount);
-    io.emit("pay_detail", res);
+    try {
+      const res = await pay(id, sender, amount);
+      io.emit("pay_detail", res);
+    } catch (error) {
+      // TODO: update for better error message
+      io.emit("pay_detail", false);
+    }
   });
 
   socket.on("send_notification", async (id, notification) => {

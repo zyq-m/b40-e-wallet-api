@@ -47,53 +47,34 @@ app.use(
 );
 
 io.on("connect", socket => {
-  socket.on("connected", async id => {
-    if (id) {
-      await updateSocketId(socket.id, id);
-    }
-  });
-
   socket.on("new_user", async id => {
-    try {
-      await addUser(id, socket.id);
-      return io.to(socket.id).emit("login_error", false);
-    } catch (error) {
-      return io.to(socket.id).emit("login_error", true);
-    }
+    // join a room
+    socket.join(`${id}`);
   });
 
   // recieve id to get transaction
   socket.on("get_transaction_student", async id => {
-    const user = getUser(id);
-    const transaction = getSenderTransaction(id);
+    const transaction = await getSenderTransaction(id);
 
-    Promise.all([user, transaction]).then(res => {
-      return io.to(res[0].socket_id).emit("set_transaction_student", res[1]);
-    });
+    io.to(`${id}`).emit("set_transaction_student", transaction);
   });
 
   socket.on("get_transaction_cafe", async id => {
     const res = await getRecipientTransaction(id);
-    const user = await getUser(id);
-    user && io.to(user.socket_id).emit("set_transaction_cafe", res);
+
+    io.to(`${id}`).emit("set_transaction_cafe", res);
   });
 
   socket.on("get_student", async id => {
-    const profile = getStudent(id);
-    const user = getUser(id);
+    const profile = await getStudent(id);
 
-    Promise.all([user, profile]).then(res => {
-      return io.to(res[0].socket_id).emit("set_student", res[1]);
-    });
+    io.to(`${id}`).emit("set_student", profile);
   });
 
   socket.on("get_cafe", async id => {
-    const cafe = getCafe(id);
-    const user = getUser(id);
+    const cafe = await getCafe(id);
 
-    Promise.all([user, cafe]).then(res => {
-      return io.to(res[0].socket_id).emit("set_cafe", res[1]);
-    });
+    return io.to(`${id}`).emit("set_cafe", cafe);
   });
 
   socket.on("pay", async (id, sender, amount) => {
@@ -107,11 +88,10 @@ io.on("connect", socket => {
   });
 
   socket.on("send_notification", async (id, notification) => {
-    const user = await getUser(id);
-    user && io.to(user.socket_id).emit("get_notification", notification);
+    io.to(`${id}`).emit("get_notification", notification);
   });
 
-  socket.on("logout", async id => await removeUser(id));
+  socket.on("logout", async id => socket.leave(id));
 });
 
 const authenticateToken = (request, response, next) => {

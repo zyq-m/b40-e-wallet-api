@@ -1,6 +1,6 @@
 {
   "name": "b40-api",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "RESTful API with Node.js and PostgreSQL",
   "main": "index.js",
   "scripts": {

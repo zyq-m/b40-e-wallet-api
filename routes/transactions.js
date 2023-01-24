@@ -8,35 +8,16 @@ const {
 
 const getTransactions = (request, response) => {
   const sql = `
-    SELECT * FROM transactions 
-    INNER JOIN students ON students.matric_no = transactions.sender
-    INNER JOIN cafe_owners on cafe_owners.username = transactions.recipient
+    SELECT t.transaction_id, t.sender, t.created_at, t.created_on, t.amount, s.student_name, c.cafe_name, t.approved_by_recipient
+    FROM transactions as t
+    INNER JOIN students as s ON s.matric_no = t.sender
+    INNER JOIN cafe_owners as c on c.username = t.recipient
     ORDER BY created_at DESC`;
 
   pool.query(sql, (error, results) => {
     if (error) return response.status(500);
-    const data = results.rows.map(
-      ({
-        transaction_id,
-        sender,
-        recipient,
-        created_at,
-        created_on,
-        amount,
-        student_name,
-        cafe_name,
-      }) => ({
-        transaction_id: transaction_id,
-        sender: sender,
-        recipient: recipient,
-        created_at: created_at,
-        created_on: created_on,
-        amount: amount,
-        student_name: student_name,
-        cafe_name: cafe_name,
-      })
-    );
-    return response.status(200).json(data);
+
+    return response.status(200).json(results.rows);
   });
 };
 
@@ -67,7 +48,8 @@ const pay = (request, response) => {
 const getSenderTransaction = (req, res) => {
   const id = req.params.id;
   const sql = `
-    SELECT * FROM transactions as t 
+    SELECT t.transaction_id, t.sender, t.created_at, t.created_on, t.amount, s.student_name, c.cafe_name, t.approved_by_recipient
+    FROM transactions as t 
     INNER JOIN students as s ON s.matric_no = t.sender
     INNER JOIN cafe_owners as c on c.username = t.recipient
     WHERE t.sender = $1
@@ -76,71 +58,31 @@ const getSenderTransaction = (req, res) => {
   pool.query(sql, [id], (error, results) => {
     if (error) return res.sendStatus(500);
 
-    if (results.rowCount == 0) return res.sendStatus(404);
+    if (results.rowCount == 0)
+      return res.status(400).json("Transactions not found");
 
-    const data = results.rows.map(
-      ({
-        transaction_id,
-        sender,
-        recipient,
-        created_at,
-        created_on,
-        amount,
-        student_name,
-        cafe_name,
-      }) => ({
-        transaction_id,
-        sender,
-        recipient,
-        created_at,
-        created_on,
-        amount,
-        student_name,
-        cafe_name,
-      })
-    );
-
-    return res.status(200).json(data);
+    return res.status(200).json(results.rows);
   });
 };
 
 const getRecipientTransaction = (req, res) => {
   const id = req.params.id;
   const sql = `
-    SELECT * FROM transactions as t 
-    INNER JOIN students as s ON s.matric_no = t.sender
-    INNER JOIN cafe_owners as c on c.username = t.recipient
-    WHERE t.recipient = $1
-    ORDER BY t.created_at DESC`;
+  SELECT t.transaction_id, t.sender, t.created_at, t.created_on, t.amount, s.student_name, c.cafe_name, t.approved_by_recipient
+  FROM transactions as t 
+  INNER JOIN students as s ON s.matric_no = t.sender
+  INNER JOIN cafe_owners as c on c.username = t.recipient
+  WHERE t.recipient = $1
+  ORDER BY t.created_at DESC
+  `;
 
   pool.query(sql, [id], (error, results) => {
     if (error) return res.status(500);
 
-    const data = results.rows.map(
-      ({
-        transaction_id,
-        sender,
-        recipient,
-        created_at,
-        created_on,
-        amount,
-        student_name,
-        cafe_name,
-        approved_by_recipient,
-      }) => ({
-        transaction_id,
-        sender,
-        recipient,
-        created_at,
-        created_on,
-        amount,
-        student_name,
-        cafe_name,
-        approved_by_recipient,
-      })
-    );
+    if (results.rowCount == 0)
+      return res.status(400).json("Transactions not found");
 
-    return res.status(200).json(data);
+    return res.status(200).json(results.rows);
   });
 };
 
@@ -173,7 +115,30 @@ const dateRange = (request, res) => {
     });
 };
 
+const getOverall = (req, res) => {
+  const { from, to } = req.params;
+
+  const sql = `
+  SELECT c.cafe_name, SUM(t.amount) as total_amount, count(t.amount) as total_transaction FROM transactions as t
+  INNER JOIN cafe_owners as c ON c.username = t.recipient
+  WHERE t.created_on BETWEEN $1 AND $2
+  GROUP BY c.cafe_name
+  `;
+
+  pool
+    .query(sql, [from, to])
+    .then(data => {
+      if (data.rowCount == 0) {
+        return res.status(400).send("No transactions");
+      }
+
+      return res.status(200).json(data.rows);
+    })
+    .catch(err => res.status(500).json(err));
+};
+
 transactionRouter.get("/transactions", getTransactions);
+transactionRouter.get("/transactions/cafe/overall/:from/:to", getOverall);
 transactionRouter.get("/transactions/students/:id", getSenderTransaction);
 transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
 transactionRouter.get("/transactions/cafe/range/:id/:from/:to", dateRange);

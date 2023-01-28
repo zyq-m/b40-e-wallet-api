@@ -137,9 +137,33 @@ const getOverall = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
+const getTotalToday = (req, res) => {
+  const { id } = req.params;
+  const sql = `
+  SELECT s.matric_no, sum(t.amount) as total
+  FROM transactions as t
+  INNER JOIN students as s
+  ON s.matric_no = t.sender
+  WHERE s.matric_no = $1 AND t.created_on = CURRENT_DATE
+  GROUP BY s.matric_no
+  `;
+
+  pool
+    .query(sql, [id])
+    .then(data => {
+      if (data.rowCount == 0) {
+        return res.status(200).send([{ total: 0 }]);
+      }
+
+      return res.status(200).json(data.rows);
+    })
+    .catch(err => res.status(500).json(err));
+};
+
 transactionRouter.get("/transactions", getTransactions);
 transactionRouter.get("/transactions/cafe/overall/:from/:to", getOverall);
 transactionRouter.get("/transactions/students/:id", getSenderTransaction);
+transactionRouter.get("/transactions/students/today/:id", getTotalToday);
 transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
 transactionRouter.get("/transactions/cafe/range/:id/:from/:to", dateRange);
 transactionRouter.post("/transactions/cafe/:id", pay);

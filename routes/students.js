@@ -74,10 +74,25 @@ const suspendStudents = (request, response) => {
   );
 };
 
+const deleteStudents = (request, response) => {
+  const id = request.params.id;
+
+  pool.query(
+    "DELETE FROM students WHERE matric_no = $1",
+    [id],
+    (error, results) => {
+      if (error) return response.sendStatus(500);
+      if (results.rowCount === 0) return response.sendStatus(404);
+      return response.sendStatus(200);
+    }
+  );
+};
+
 router.get("/students", getStudents);
 router.get("/students/:id", getStudentsById);
 router.post("/students", createStudent);
 router.put("/students/:id/wallet", setWalletAmount);
 router.put("/students/:id/suspend", suspendStudents);
+router.delete("/students/:id/delete", deleteStudents);
 
 module.exports = router;

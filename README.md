@@ -12,7 +12,7 @@ Ada banyak jenis request yg ada. Dlm projek ni kita guna 3 jenis:
 
 - `get` request utk dapatkan data
 - `post` request utk send data
-- `put` request utk update data
+- `put` request utk update data 
 
 ### Axios library
 

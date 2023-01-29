@@ -12,6 +12,16 @@ const getCafe = (request, response) => {
   );
 };
 
+const getCafeAcc = (request, response) => {
+  pool.query(
+    "SELECT username, owner_name, active, cafe_name, password FROM cafe_owners",
+    (error, results) => {
+      if (error) return response.status(500);
+      return response.status(200).json(results.rows);
+    }
+  );
+};
+
 const getCafeById = (request, response) => {
   const id = request.params.id;
 
@@ -75,6 +85,7 @@ const getTransactions = (request, response) => {
 };
 
 router.get("/cafe", getCafe);
+router.get("/cafe/account", getCafeAcc);
 router.get("/cafe/:id", getCafeById);
 router.post("/cafe", createCafe);
 router.put("/cafe/:id/suspend", suspendCafe);

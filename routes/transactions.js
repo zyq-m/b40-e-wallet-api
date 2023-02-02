@@ -115,7 +115,7 @@ const dateRange = (request, res) => {
     });
 };
 
-const getOverall = (req, res) => {
+const getOverallWithDate = async (req, res) => {
   const { from, to } = req.params;
 
   const sql = `
@@ -124,17 +124,57 @@ const getOverall = (req, res) => {
   WHERE t.created_on BETWEEN $1 AND $2
   GROUP BY c.cafe_name
   `;
+  const sql2 = `
+  SELECT sum(amount) sum_amount, count(amount) sum_transaction
+  FROM transactions
+  WHERE created_on BETWEEN $1 AND $2
+  `;
 
-  pool
-    .query(sql, [from, to])
-    .then(data => {
-      if (data.rowCount == 0) {
-        return res.status(400).send("No transactions");
-      }
+  const transaction = pool.query(sql, [from, to]);
+  const total = pool.query(sql2, [from, to]);
 
-      return res.status(200).json(data.rows);
-    })
-    .catch(err => res.status(500).json(err));
+  try {
+    const results = await Promise.all([transaction, total]);
+
+    if (results[0].rowCount == 0) {
+      return res.status(400).send("No transactions");
+    }
+
+    return res
+      .status(200)
+      .json({ transactions: results[0].rows, overall: results[1].rows[0] });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
+const getOverall = async (req, res) => {
+  const sql = `
+  SELECT c.cafe_name, SUM(t.amount) as total_amount, count(t.amount) as total_transaction FROM transactions as t
+  INNER JOIN cafe_owners as c ON c.username = t.recipient
+  GROUP BY c.cafe_name
+  `;
+  const sql2 = `
+  SELECT sum(amount) sum_amount, count(amount) sum_transaction
+  FROM transactions
+  `;
+
+  const transaction = pool.query(sql);
+  const total = pool.query(sql2);
+
+  try {
+    const results = await Promise.all([transaction, total]);
+
+    if (results[0].rowCount == 0) {
+      return res.status(400).send("No transactions");
+    }
+
+    return res
+      .status(200)
+      .json({ transactions: results[0].rows, overall: results[1].rows[0] });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
 };
 
 const getTotalToday = (req, res) => {
@@ -161,7 +201,11 @@ const getTotalToday = (req, res) => {
 };
 
 transactionRouter.get("/transactions", getTransactions);
-transactionRouter.get("/transactions/cafe/overall/:from/:to", getOverall);
+transactionRouter.get("/transactions/cafe/overall", getOverall);
+transactionRouter.get(
+  "/transactions/cafe/overall/:from/:to",
+  getOverallWithDate
+);
 transactionRouter.get("/transactions/students/:id", getSenderTransaction);
 transactionRouter.get("/transactions/students/today/:id", getTotalToday);
 transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);

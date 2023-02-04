@@ -84,8 +84,48 @@ const getTransactions = (request, response) => {
   );
 };
 
+const getProfile = (req, res) => {
+  const id = req.params.id;
+  const sql = `
+  SELECT bank_name, account_no 
+  FROM cafe_owners
+  WHERE username = $1
+  `;
+
+  pool
+    .query(sql, [id])
+    .then(data => {
+      if (data.rowCount === 0) return res.sendStatus(404);
+      return res.status(200).json(data.rows[0]);
+    })
+    .catch(err => res.status(500).json(err));
+};
+
+const updateProfile = (req, res) => {
+  const id = req.params.id;
+  const { bankName, accountNo } = req.body;
+
+  const sql = `
+  UPDATE cafe_owners 
+  SET bank_name = $1, account_no = $2
+  WHERE username = $3
+  `;
+
+  if (!bankName || !accountNo) return res.sendStatus(400);
+
+  pool
+    .query(sql, [bankName, accountNo, id])
+    .then(data => {
+      if (data.rowCount === 0) return res.sendStatus(404);
+      return res.status(200).json(data.rows[0]);
+    })
+    .catch(err => res.status(500).json(err));
+};
+
 router.get("/cafe", getCafe);
 router.get("/cafe/account", getCafeAcc);
+router.get("/cafe/profile/:id", getProfile);
+router.put("/cafe/profile/:id", updateProfile);
 router.get("/cafe/:id", getCafeById);
 router.post("/cafe", createCafe);
 router.put("/cafe/:id/suspend", suspendCafe);

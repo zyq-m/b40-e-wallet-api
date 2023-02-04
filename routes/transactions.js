@@ -200,6 +200,26 @@ const getTotalToday = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
+const claim = (req, res) => {
+  const { from, to } = req.params;
+  const sql = `
+  UPDATE transactions
+  SET claimed = true, date_claimed = CURRENT_DATE
+  WHERE claimed = false AND created_on BETWEEN $1 AND $2
+  `;
+
+  pool
+    .query(sql, [from, to])
+    .then(data => {
+      if (data.rowCount == 0) {
+        return res.sendStatus(404);
+      }
+
+      return res.sendStatus(200);
+    })
+    .catch(err => res.status(500).json(err));
+};
+
 transactionRouter.get("/transactions", getTransactions);
 transactionRouter.get("/transactions/cafe/overall", getOverall);
 transactionRouter.get(
@@ -212,5 +232,6 @@ transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
 transactionRouter.get("/transactions/cafe/range/:id/:from/:to", dateRange);
 transactionRouter.post("/transactions/cafe/:id", pay);
 transactionRouter.put("/transactions/approved", checked);
+transactionRouter.put("/transactions/claim/:from/:to", claim);
 
 module.exports = { transactionRouter };

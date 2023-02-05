@@ -4,7 +4,7 @@ const pool = require("./query");
 
 const getCafe = (request, response) => {
   pool.query(
-    "SELECT username, owner_name, active, cafe_name FROM cafe_owners",
+    "SELECT username, owner_name, active, cafe_name FROM cafe_owners WHERE active = true",
     (error, results) => {
       if (error) return response.status(500);
       return response.status(200).json(results.rows);

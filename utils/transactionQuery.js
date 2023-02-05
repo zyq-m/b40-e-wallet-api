@@ -18,7 +18,7 @@ const getRecipientTransaction = async id => {
     SELECT * FROM transactions as t 
     INNER JOIN students as s ON s.matric_no = t.sender
     INNER JOIN cafe_owners as c on c.username = t.recipient
-    WHERE t.recipient = $1
+    WHERE t.recipient = $1 AND t.claimed = false
     ORDER BY t.created_at DESC`;
   const values = [id];
 

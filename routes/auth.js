@@ -34,7 +34,7 @@ const loginStudents = (request, response) => {
   const { matric_no, password } = request.body;
   const user = { user: matric_no };
   const sql =
-    "SELECT matric_no FROM students WHERE matric_no = $1 AND password = $2";
+    "SELECT matric_no FROM students WHERE matric_no = $1 AND password = $2 AND active = true";
 
   login(response, sql, matric_no, password, user);
 };
@@ -43,7 +43,7 @@ const loginCafe = (request, response) => {
   const { username, password } = request.body;
   const user = { user: username };
   const sql =
-    "SELECT username FROM cafe_owners WHERE username = $1 AND password = $2";
+    "SELECT username FROM cafe_owners WHERE username = $1 AND password = $2 AND active = true";
 
   login(response, sql, username, password, user);
 };

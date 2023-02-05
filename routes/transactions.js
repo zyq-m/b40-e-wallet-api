@@ -224,7 +224,23 @@ const claim = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
+const countTransaction = (req, res) => {
+  pool
+    .query(
+      "SELECT count(transaction_id) total_transactions from transactions WHERE claimed = false"
+    )
+    .then(data => {
+      if (data.rowCount == 0) {
+        return res.sendStatus(404);
+      }
+
+      return res.status(200).json(data.rows[0]);
+    })
+    .catch(err => res.status(500).json(err));
+};
+
 transactionRouter.get("/transactions", getTransactions);
+transactionRouter.get("/transactions/total", countTransaction);
 transactionRouter.get("/transactions/cafe/overall", getOverall);
 transactionRouter.get(
   "/transactions/cafe/overall/:from/:to",

@@ -88,7 +88,23 @@ const deleteStudents = (request, response) => {
   );
 };
 
+const countStudents = (req, res) => {
+  pool
+    .query(
+      "SELECT count(matric_no) total_students from students WHERE active = true"
+    )
+    .then(data => {
+      if (data.rowCount == 0) {
+        return res.sendStatus(404);
+      }
+
+      return res.status(200).json(data.rows[0]);
+    })
+    .catch(err => res.status(500).json(err));
+};
+
 router.get("/students", getStudents);
+router.get("/students/total", countStudents);
 router.get("/students/:id", getStudentsById);
 router.post("/students", createStudent);
 router.put("/students/:id/wallet", setWalletAmount);

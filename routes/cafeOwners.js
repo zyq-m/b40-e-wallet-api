@@ -122,7 +122,23 @@ const updateProfile = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
+const countCafe = (req, res) => {
+  pool
+    .query(
+      "SELECT count(username) total_cafe from cafe_owners WHERE active = true"
+    )
+    .then(data => {
+      if (data.rowCount == 0) {
+        return res.sendStatus(404);
+      }
+
+      return res.status(200).json(data.rows[0]);
+    })
+    .catch(err => res.status(500).json(err));
+};
+
 router.get("/cafe", getCafe);
+router.get("/cafe/total", countCafe);
 router.get("/cafe/account", getCafeAcc);
 router.get("/cafe/profile/:id", getProfile);
 router.put("/cafe/profile/:id", updateProfile);

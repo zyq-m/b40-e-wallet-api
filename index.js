@@ -18,18 +18,13 @@ const {
   getSenderTransaction,
   getRecipientTransaction,
   pay,
+  getSalesAmount,
 } = require("./utils/transactionQuery");
 const { getStudent, getCafe } = require("./utils/profile");
-const {
-  addUser,
-  getUser,
-  removeUser,
-  updateSocketId,
-} = require("./utils/socketUser");
 
 const app = express();
 const httpServer = createServer(app);
-let port = process.env.PORT || 3000;
+let port = process.env.PORT || 4000;
 const io = new Server(httpServer, {
   cors: {
     origin: "*", // accept all client origin
@@ -50,6 +45,13 @@ io.on("connect", socket => {
   socket.on("new_user", async id => {
     // join a room
     socket.join(`${id}`);
+  });
+
+  // get cafe sales amount
+  socket.on("get_sales_amount", async id => {
+    const salesAmount = await getSalesAmount(id);
+
+    io.to(`${id}`).emit("set_sales_amount", salesAmount?.[0]);
   });
 
   // recieve id to get transaction

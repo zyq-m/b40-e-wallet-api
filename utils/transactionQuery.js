@@ -60,10 +60,29 @@ const getRecipientTransactionByDateRange = async (recipient, from, to) => {
   return data.rows;
 };
 
+const getWalletBalance = async matric_no => {
+  const sql = `SELECT wallet_amount from students where matric_no = $1`;
+
+  const data = await pool.query(sql, [matric_no]);
+  return data.rows;
+};
+
+const getSalesAmount = async id => {
+  const sql = `
+  SELECT sum(amount) total_sales FROM transactions t 
+  WHERE t.recipient = $1 AND t.claimed = false
+  `;
+
+  const data = await pool.query(sql, [id]);
+  return data.rows;
+};
+
 module.exports = {
   getSenderTransaction,
   pay,
   getRecipientTransaction,
   approved,
   getRecipientTransactionByDateRange,
+  getWalletBalance,
+  getSalesAmount,
 };

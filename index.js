@@ -24,7 +24,7 @@ const { getStudent, getCafe } = require("./utils/profile");
 
 const app = express();
 const httpServer = createServer(app);
-let port = process.env.PORT || 4000;
+let port = process.env.PORT || 3000;
 const io = new Server(httpServer, {
   cors: {
     origin: "*", // accept all client origin

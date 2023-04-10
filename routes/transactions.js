@@ -119,10 +119,11 @@ const getOverallWithDate = async (req, res) => {
   const { from, to } = req.params;
 
   const sql = `
-  SELECT c.cafe_name, SUM(t.amount) as total_amount, count(t.amount) as total_transaction FROM transactions as t
+  SELECT c.cafe_name, c.cafe_address, c.owner_name, c.mobile_no, c.bank_name, c.account_no, 
+  SUM(t.amount) as total_amount, count(t.amount) as total_transaction FROM transactions as t
   INNER JOIN cafe_owners as c ON c.username = t.recipient
   WHERE c.active = true AND t.created_on BETWEEN $1 AND $2
-  GROUP BY c.cafe_name
+  GROUP BY c.cafe_name, c.cafe_address, c.owner_name, c.mobile_no, c.bank_name, c.account_no
   `;
   const sql2 = `
   SELECT sum(t.amount) sum_amount, count(t.amount) sum_transaction
@@ -151,10 +152,11 @@ const getOverallWithDate = async (req, res) => {
 
 const getOverall = async (req, res) => {
   const sql = `
-  SELECT c.cafe_name, SUM(t.amount) as total_amount, count(t.amount) as total_transaction FROM transactions as t
+  SELECT c.cafe_name, c.cafe_address, c.owner_name, c.mobile_no, c.bank_name, c.account_no, 
+  SUM(t.amount) as total_amount, count(t.amount) as total_transaction FROM transactions as t
   INNER JOIN cafe_owners as c ON c.username = t.recipient
   WHERE c.active = true
-  GROUP BY c.cafe_name
+  GROUP BY c.cafe_name, c.cafe_address, c.owner_name, c.mobile_no, c.bank_name, c.account_no
   `;
   const sql2 = `
   SELECT sum(t.amount) sum_amount, count(t.amount) sum_transaction

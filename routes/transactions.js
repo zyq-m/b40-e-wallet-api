@@ -4,6 +4,7 @@ const pool = require("./query");
 const {
   approved,
   getRecipientTransactionByDateRange,
+  getSenderTransactionByDateRange,
 } = require("../utils/transactionQuery");
 
 const getTransactions = (request, response) => {
@@ -104,6 +105,21 @@ const dateRange = (request, res) => {
   const { id, from, to } = request.params;
 
   getRecipientTransactionByDateRange(id, from, to)
+    .then(data => {
+      if (data.length == 0) {
+        return res.sendStatus(404);
+      }
+      return res.status(200).json(data);
+    })
+    .catch(err => {
+      return res.sendStatus(500);
+    });
+};
+
+const senderDate = (request, res) => {
+  const { id, from, to } = request.params;
+
+  getSenderTransactionByDateRange(id, from, to)
     .then(data => {
       if (data.length == 0) {
         return res.sendStatus(404);
@@ -249,6 +265,7 @@ transactionRouter.get(
   getOverallWithDate
 );
 transactionRouter.get("/transactions/students/:id", getSenderTransaction);
+transactionRouter.get("/transactions/students/range/:id/:from/:to", senderDate);
 transactionRouter.get("/transactions/students/today/:id", getTotalToday);
 transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
 transactionRouter.get("/transactions/cafe/range/:id/:from/:to", dateRange);

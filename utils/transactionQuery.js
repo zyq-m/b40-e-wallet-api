@@ -60,6 +60,19 @@ const getRecipientTransactionByDateRange = async (recipient, from, to) => {
   return data.rows;
 };
 
+const getSenderTransactionByDateRange = async (sender, from, to) => {
+  const sql = `SELECT transaction_id, amount, sender, s.student_name, 
+  recipient, c.cafe_name, created_at, created_on
+  FROM transactions as t
+  INNER JOIN students as s ON s.matric_no = t.sender
+  INNER JOIN cafe_owners as c on c.username = t.recipient
+  WHERE t.sender = $1 AND t.created_on BETWEEN $2 AND $3
+  ORDER BY t.created_at DESC, t.created_on DESC`;
+
+  const data = await pool.query(sql, [sender, from, to]);
+  return data.rows;
+};
+
 const getWalletBalance = async matric_no => {
   const sql = `SELECT wallet_amount from students where matric_no = $1`;
 
@@ -85,4 +98,5 @@ module.exports = {
   getRecipientTransactionByDateRange,
   getWalletBalance,
   getSalesAmount,
+  getSenderTransactionByDateRange,
 };

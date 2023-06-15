@@ -5,6 +5,7 @@ const {
   approved,
   getRecipientTransactionByDateRange,
   getSenderTransactionByDateRange,
+  pay,
 } = require("../utils/transactionQuery");
 
 const getTransactions = (request, response) => {
@@ -22,26 +23,18 @@ const getTransactions = (request, response) => {
   });
 };
 
-const pay = (request, response) => {
+const onPay = async (request, response) => {
   const id = request.params.id;
   const { sender, amount } = request.body;
 
-  if (amount) {
-    pool
-      .query(
-        "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
-        [sender, id, amount]
-      )
-      .then(res => {
-        pool
-          .query(
-            "UPDATE students SET wallet_amount = (SELECT wallet_amount WHERE matric_no = $1) - $2 WHERE matric_no = $3",
-            [sender, amount, sender]
-          )
-          .then(() => response.status(201).json(res.rows));
-      })
-      .catch(err => response.status(500).send(err));
-  } else {
+  try {
+    await pay(id, sender, amount);
+
+    return response.sendStatus(201);
+  } catch (error) {
+    if (error?.userException) {
+      return response.status(400).send(error);
+    }
     return response.sendStatus(500);
   }
 };
@@ -269,7 +262,7 @@ transactionRouter.get("/transactions/students/range/:id/:from/:to", senderDate);
 transactionRouter.get("/transactions/students/today/:id", getTotalToday);
 transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
 transactionRouter.get("/transactions/cafe/range/:id/:from/:to", dateRange);
-transactionRouter.post("/transactions/cafe/:id", pay);
+transactionRouter.post("/transactions/cafe/:id", onPay);
 transactionRouter.put("/transactions/approved", checked);
 transactionRouter.put("/transactions/claim/:from/:to", claim);
 

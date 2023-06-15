@@ -27,15 +27,32 @@ const getRecipientTransaction = async id => {
 };
 
 const pay = async (id, sender, amount) => {
-  const res = await pool.query(
-    "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
-    [sender, id, amount]
+  class UserException {
+    constructor(message) {
+      this.userException = true;
+      this.message = message;
+      this.name = "UserException";
+    }
+  }
+
+  const active = await pool.query(
+    "SELECT active from students WHERE matric_no = $1 AND active = true",
+    [sender]
   );
-  await pool.query(
-    "UPDATE students SET wallet_amount = (SELECT wallet_amount WHERE matric_no = $1) - $2 WHERE matric_no = $3",
-    [sender, amount, sender]
-  );
-  return res.rows;
+
+  // check if sender is active
+  if (active.rowCount == 0) {
+    throw new UserException("Your account not active");
+  } else {
+    await pool.query(
+      "INSERT INTO transactions (sender, recipient, amount) VALUES ($1, $2, $3) RETURNING *",
+      [sender, id, amount]
+    );
+    await pool.query(
+      "UPDATE students SET wallet_amount = (SELECT wallet_amount WHERE matric_no = $1) - $2 WHERE matric_no = $3",
+      [sender, amount, sender]
+    );
+  }
 };
 
 const approved = async (transactionId, value) => {

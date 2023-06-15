@@ -79,13 +79,14 @@ io.on("connect", socket => {
     return io.to(`${id}`).emit("set_cafe", cafe);
   });
 
+  // TODO!: terminate this line of code
   socket.on("pay", async (id, sender, amount) => {
     try {
       const res = await pay(id, sender, amount);
       io.emit("pay_detail", res);
     } catch (error) {
       // TODO: update for better error message
-      io.emit("pay_detail", false);
+      io.emit("pay_detail", error);
     }
   });
 

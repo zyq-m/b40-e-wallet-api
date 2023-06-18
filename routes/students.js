@@ -4,7 +4,7 @@ const pool = require("./query");
 
 const getStudents = (request, response) => {
   pool.query(
-    "SELECT matric_no, ic_no, student_name, wallet_amount, active FROM students",
+    "SELECT matric_no, ic_no, student_name, wallet_amount, active FROM students where dummy = false",
     (error, results) => {
       if (error) return response.sendStatus(500);
       return response.status(200).json(results.rows);
@@ -91,7 +91,7 @@ const deleteStudents = (request, response) => {
 const countStudents = (req, res) => {
   pool
     .query(
-      "SELECT count(matric_no) total_students from students WHERE active = true"
+      "SELECT count(matric_no) total_students from students WHERE dummy = false"
     )
     .then(data => {
       if (data.rowCount == 0) {

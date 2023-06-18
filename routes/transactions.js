@@ -238,7 +238,14 @@ const claim = (req, res) => {
 const countTransaction = (req, res) => {
   pool
     .query(
-      "SELECT count(transaction_id) total_transactions from transactions WHERE claimed = false"
+      `
+      select count(t.transaction_id) total_transactions from transactions as t
+      inner join students as s
+      on s.matric_no = t.sender
+      inner join cafe_owners as c
+      on c.username = t.recipient
+      where s.dummy = false and c.dummy = false and t.claimed = false;
+      `
     )
     .then(data => {
       if (data.rowCount == 0) {

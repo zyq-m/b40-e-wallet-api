@@ -4,7 +4,7 @@ const pool = require("./query");
 
 const getStudents = (request, response) => {
   pool.query(
-    "SELECT matric_no, ic_no, student_name, wallet_amount, active FROM students WHERE active = true",
+    "SELECT matric_no, ic_no, student_name, wallet_amount, active FROM students",
     (error, results) => {
       if (error) return response.sendStatus(500);
       return response.status(200).json(results.rows);

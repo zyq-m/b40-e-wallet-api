@@ -131,7 +131,7 @@ const getOverallWithDate = async (req, res) => {
   SELECT c.cafe_name, c.cafe_address, c.owner_name, c.mobile_no, c.bank_name, c.account_no, 
   SUM(t.amount) as total_amount, count(t.amount) as total_transaction FROM transactions as t
   INNER JOIN cafe_owners as c ON c.username = t.recipient
-  WHERE c.active = true AND t.created_on BETWEEN $1 AND $2
+  WHERE c.active = true AND t.created_on BETWEEN $1 AND $2 AND c.dummy = false
   GROUP BY c.cafe_name, c.cafe_address, c.owner_name, c.mobile_no, c.bank_name, c.account_no
   `;
   const sql2 = `
@@ -164,7 +164,7 @@ const getOverall = async (req, res) => {
   SELECT c.cafe_name, c.cafe_address, c.owner_name, c.mobile_no, c.bank_name, c.account_no, 
   SUM(t.amount) as total_amount, count(t.amount) as total_transaction FROM transactions as t
   INNER JOIN cafe_owners as c ON c.username = t.recipient
-  WHERE c.active = true
+  WHERE c.active = true AND c.dummy = false
   GROUP BY c.cafe_name, c.cafe_address, c.owner_name, c.mobile_no, c.bank_name, c.account_no
   `;
   const sql2 = `

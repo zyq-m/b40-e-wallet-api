@@ -1,37 +1,31 @@
 const pool = require("../routes/query");
 
 const checkCafe = async (id, pass) => {
-  const sql = `SELECT username FROM cafe_owners
-  WHERE username = $1 AND password = $2`;
+  const sql = `select verify_pass($1, $2, false) as verified`;
   const data = await pool.query(sql, [id, pass]);
 
-  return data.rowCount;
+  return data.rows[0]?.verified;
 };
 
 const changeCafe = async (id, newPass) => {
-  const sql = `UPDATE cafe_owners
-  SET password = $1
-  WHERE username = $2`;
-  const data = await pool.query(sql, [newPass, id]);
+  const sql = `select update_pass($1, $2, false) as updated`;
+  const data = await pool.query(sql, [id, newPass]);
 
-  return data.rowCount;
+  return data.rows[0]?.updated;
 };
 
 const checkStudent = async (id, pass) => {
-  const sql = `SELECT matric_no FROM students
-  WHERE matric_no = $1 AND password = $2`;
+  const sql = `select verify_pass($1, $2, true) as verified`;
   const data = await pool.query(sql, [id, pass]);
 
-  return data.rowCount;
+  return data.rows;
 };
 
 const changeStudent = async (id, newPass) => {
-  const sql = `UPDATE students
-    SET password = $1
-    WHERE matric_no = $2`;
-  const data = await pool.query(sql, [newPass, id]);
+  const sql = `select update_pass($1, $2, true) as updated`;
+  const data = await pool.query(sql, [id, newPass]);
 
-  return data.rowCount;
+  return data.rows[0]?.updated;
 };
 
 module.exports = { checkStudent, changeStudent, checkCafe, changeCafe };

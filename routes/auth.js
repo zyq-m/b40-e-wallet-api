@@ -14,7 +14,7 @@ const login = (response, sql, id, password, user) => {
   pool
     .query(sql, [id, password])
     .then(results => {
-      if (results.rowCount === 0) return response.sendStatus(404);
+      if (!results.rows[0]?.is_verify) return response.sendStatus(404);
 
       const accessToken = generateAccessToken(user);
       const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
@@ -33,8 +33,7 @@ const login = (response, sql, id, password, user) => {
 const loginStudents = (request, response) => {
   const { matric_no, password } = request.body;
   const user = { user: matric_no };
-  const sql =
-    "SELECT matric_no FROM students WHERE matric_no = $1 AND password = $2 AND active = true";
+  const sql = "SELECT verify_pass($1, $2, true) as is_verify";
 
   login(response, sql, matric_no, password, user);
 };
@@ -42,8 +41,7 @@ const loginStudents = (request, response) => {
 const loginCafe = (request, response) => {
   const { username, password } = request.body;
   const user = { user: username };
-  const sql =
-    "SELECT username FROM cafe_owners WHERE username = $1 AND password = $2 AND active = true";
+  const sql = "SELECT verify_pass($1, $2, false) as is_verify";
 
   login(response, sql, username, password, user);
 };

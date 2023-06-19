@@ -15,21 +15,21 @@ passwordRouter.put("/password/students/:id", async (req, res) => {
     // check curr password
     const isExist = await checkStudent(id, currentPassword);
 
-    if (isExist === 0) {
+    if (!isExist) {
       return res.sendStatus(404);
     }
 
     // change pasword
     const password = await changeStudent(id, newPassword);
 
-    if (password === 0) {
+    if (!password) {
       return res.sendStatus(404);
     }
 
-    res.sendStatus(200);
+    return res.sendStatus(200);
   } catch (error) {
     console.log(error);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
 
@@ -41,15 +41,20 @@ passwordRouter.put("/password/cafe/:id", async (req, res) => {
     // check curr password
     const isExist = await checkCafe(id, currentPassword);
 
-    if (isExist === 0) {
+    if (!isExist) {
       return res.sendStatus(404);
     }
 
     // change pasword
-    await changeCafe(id, newPassword);
-    res.sendStatus(200);
+    const password = await changeCafe(id, newPassword);
+
+    if (!password) {
+      return res.sendStatus(404);
+    }
+
+    return res.sendStatus(200);
   } catch (error) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
 

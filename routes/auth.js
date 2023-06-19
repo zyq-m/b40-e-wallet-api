@@ -32,7 +32,7 @@ const login = (response, sql, id, password, user) => {
 
 const loginStudents = (request, response) => {
   const { matric_no, password } = request.body;
-  const user = { user: matric_no };
+  const user = { user: matric_no, role: "student" };
   const sql = "SELECT verify_pass($1, $2, true) as is_verify";
 
   login(response, sql, matric_no, password, user);
@@ -40,7 +40,7 @@ const loginStudents = (request, response) => {
 
 const loginCafe = (request, response) => {
   const { username, password } = request.body;
-  const user = { user: username };
+  const user = { user: username, role: "cafe" };
   const sql = "SELECT verify_pass($1, $2, false) as is_verify";
 
   login(response, sql, username, password, user);
@@ -48,14 +48,16 @@ const loginCafe = (request, response) => {
 
 const loginAdmin = (request, response) => {
   const { email, password } = request.body;
-  const user = { user: email };
-  const sql = "SELECT email FROM admin WHERE email = $1 AND password = $2";
+  const user = { user: email, role: "admin" };
+  const sql = "SELECT verify_pass($1, $2, null) as is_verify";
 
   login(response, sql, email, password, user);
 };
 
 const generateAccessToken = user =>
-  jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30m" });
+  jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "30m",
+  });
 
 router.post("/students/login", loginStudents);
 

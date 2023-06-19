@@ -18,7 +18,7 @@ const checkStudent = async (id, pass) => {
   const sql = `select verify_pass($1, $2, true) as verified`;
   const data = await pool.query(sql, [id, pass]);
 
-  return data.rows;
+  return data.rows[0]?.verified;
 };
 
 const changeStudent = async (id, newPass) => {

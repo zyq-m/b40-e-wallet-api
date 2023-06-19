@@ -1,5 +1,5 @@
 const studentRole = (req, res, next) => {
-  if (req.user.role == "student") {
+  if (req?.user?.role == "student") {
     next();
     return;
   }
@@ -8,7 +8,7 @@ const studentRole = (req, res, next) => {
 };
 
 const cafeRole = (req, res, next) => {
-  if (req.user.role == "cafe") {
+  if (req?.user?.role == "cafe") {
     next();
     return;
   }
@@ -17,7 +17,7 @@ const cafeRole = (req, res, next) => {
 };
 
 const adminRole = (req, res, next) => {
-  if (req.user.role == "admin") {
+  if (req?.user?.role == "admin") {
     next();
     return;
   }

@@ -30,7 +30,7 @@ const createStudent = (request, response) => {
   const { name, matric_no, ic_no } = request.body;
 
   pool.query(
-    "INSERT INTO students (matric_no, ic_no, student_name, password) VALUES ($1, $2, $3, $4) RETURNING *",
+    "INSERT INTO students (matric_no, ic_no, student_name, password) VALUES ($1, $2, $3, crypt($4, gen_salt('bf')) ) RETURNING *",
     [matric_no, ic_no, name, ic_no],
     (error, results) => {
       if (error) {

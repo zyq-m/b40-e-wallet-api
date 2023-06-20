@@ -40,7 +40,7 @@ const createCafe = (request, response) => {
   const { username, password, owner_name, cafe_name } = request.body;
 
   pool.query(
-    "INSERT INTO cafe_owners (username, password, owner_name, cafe_name) VALUES ($1, $2, $3, $4) RETURNING *",
+    "INSERT INTO cafe_owners (username, password, owner_name, cafe_name) VALUES ($1, crypt($2, gen_salt('bf')), $3, $4) RETURNING *",
     [username, password, owner_name, cafe_name],
     (error, results) => {
       if (error) {

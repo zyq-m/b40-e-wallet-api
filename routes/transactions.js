@@ -8,6 +8,8 @@ const {
   pay,
 } = require("../utils/transactionQuery");
 
+const { adminRole, cafeRole, studentRole } = require("../middleware/rolebase");
+
 const getTransactions = (request, response) => {
   const sql = `
     SELECT t.transaction_id, t.sender, t.created_at, t.created_on, t.amount, s.student_name, c.cafe_name, t.approved_by_recipient
@@ -138,7 +140,7 @@ const getOverallWithDate = async (req, res) => {
   SELECT sum(t.amount) sum_amount, count(t.amount) sum_transaction
   FROM transactions t
   INNER JOIN cafe_owners c ON c.username = t.recipient
-  WHERE c.active = true AND t.created_on BETWEEN $1 AND $2
+  WHERE c.active = true AND t.created_on BETWEEN $1 AND $2 and c.dummy = false
   `;
 
   const transaction = pool.query(sql, [from, to]);
@@ -171,7 +173,7 @@ const getOverall = async (req, res) => {
   SELECT sum(t.amount) sum_amount, count(t.amount) sum_transaction
   FROM transactions t
   INNER JOIN cafe_owners c ON c.username = t.recipient
-  WHERE c.active = true
+  WHERE c.active = true and c.dummy = false
   `;
 
   const transaction = pool.query(sql);
@@ -257,9 +259,9 @@ const countTransaction = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
-transactionRouter.get("/transactions", getTransactions);
-transactionRouter.get("/transactions/total", countTransaction);
-transactionRouter.get("/transactions/cafe/overall", getOverall);
+transactionRouter.get("/transactions", adminRole, getTransactions);
+transactionRouter.get("/transactions/total", adminRole, countTransaction);
+transactionRouter.get("/transactions/cafe/overall", adminRole, getOverall);
 transactionRouter.get(
   "/transactions/cafe/overall/:from/:to",
   getOverallWithDate

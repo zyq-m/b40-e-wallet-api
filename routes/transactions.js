@@ -140,7 +140,7 @@ const getOverallWithDate = async (req, res) => {
   SELECT sum(t.amount) sum_amount, count(t.amount) sum_transaction
   FROM transactions t
   INNER JOIN cafe_owners c ON c.username = t.recipient
-  WHERE c.active = true AND t.created_on BETWEEN $1 AND $2
+  WHERE c.active = true AND t.created_on BETWEEN $1 AND $2 and c.dummy = false
   `;
 
   const transaction = pool.query(sql, [from, to]);
@@ -173,7 +173,7 @@ const getOverall = async (req, res) => {
   SELECT sum(t.amount) sum_amount, count(t.amount) sum_transaction
   FROM transactions t
   INNER JOIN cafe_owners c ON c.username = t.recipient
-  WHERE c.active = true
+  WHERE c.active = true and c.dummy = false
   `;
 
   const transaction = pool.query(sql);

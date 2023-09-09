@@ -259,9 +259,9 @@ const countTransaction = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
-transactionRouter.get("/transactions", adminRole, getTransactions);
-transactionRouter.get("/transactions/total", adminRole, countTransaction);
-transactionRouter.get("/transactions/cafe/overall", adminRole, getOverall);
+transactionRouter.get("/transactions", getTransactions);
+transactionRouter.get("/transactions/total", countTransaction);
+transactionRouter.get("/transactions/cafe/overall", getOverall);
 transactionRouter.get(
   "/transactions/cafe/overall/:from/:to",
   getOverallWithDate

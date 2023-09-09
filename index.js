@@ -4,8 +4,8 @@ const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
-const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const { authenticateToken } = require("./middleware/auth");
 
 const authRouter = require("./routes/auth");
 const studentRouter = require("./routes/students");
@@ -96,19 +96,6 @@ io.on("connect", socket => {
 
   socket.on("logout", async id => socket.leave(id));
 });
-
-const authenticateToken = (request, response, next) => {
-  const authHeader = request.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (token == null) return response.sendStatus(401);
-
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
-    if (error) return response.sendStatus(403);
-    request.user = user;
-    next();
-  });
-};
 
 app.use(authRouter);
 app.use(authenticateToken);

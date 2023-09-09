@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
@@ -56,7 +54,7 @@ const loginAdmin = (request, response) => {
 
 const generateAccessToken = user =>
   jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "30m",
+    expiresIn: "30s",
   });
 
 router.post("/students/login", loginStudents);

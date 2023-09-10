@@ -5,6 +5,9 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const helmet = require("helmet");
+const xssClean = require("xss-clean");
+const hpp = require("hpp");
 
 // Middleware
 const authenticateToken = require("./middleware/authToken");
@@ -34,6 +37,10 @@ const io = new Server(httpServer, {
     origin: "*", // accept all client origin
   },
 });
+
+app.use(helmet());
+app.use(xssClean());
+app.use(hpp());
 
 app.use(cors({ origin: "*" }));
 

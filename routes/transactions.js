@@ -1,5 +1,5 @@
 const express = require("express");
-const transactionRouter = express.Router();
+const router = express.Router();
 const pool = require("./query");
 const {
   approved,
@@ -8,7 +8,7 @@ const {
   pay,
 } = require("../utils/transactionQuery");
 
-const { adminRole, cafeRole, studentRole } = require("../middleware/rolebase");
+const roleMiddleware = require("../middleware/rolebase");
 
 const getTransactions = (request, response) => {
   const sql = `
@@ -259,20 +259,37 @@ const countTransaction = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
-transactionRouter.get("/transactions", getTransactions);
-transactionRouter.get("/transactions/total", countTransaction);
-transactionRouter.get("/transactions/cafe/overall", getOverall);
-transactionRouter.get(
-  "/transactions/cafe/overall/:from/:to",
+router.get("/", roleMiddleware(["admin"]), getTransactions);
+router.get("/total", roleMiddleware(["admin"]), countTransaction);
+router.get("/cafe/overall", roleMiddleware(["admin"]), getOverall);
+router.get(
+  "/cafe/overall/:from/:to",
+  roleMiddleware(["admin", "cafe"]),
   getOverallWithDate
 );
-transactionRouter.get("/transactions/students/:id", getSenderTransaction);
-transactionRouter.get("/transactions/students/range/:id/:from/:to", senderDate);
-transactionRouter.get("/transactions/students/today/:id", getTotalToday);
-transactionRouter.get("/transactions/cafe/:id", getRecipientTransaction);
-transactionRouter.get("/transactions/cafe/range/:id/:from/:to", dateRange);
-transactionRouter.post("/transactions/cafe/:id", onPay);
-transactionRouter.put("/transactions/approved", checked);
-transactionRouter.put("/transactions/claim/:from/:to", claim);
+router.get(
+  "/students/:id",
+  roleMiddleware(["admin", "student"]),
+  getSenderTransaction
+);
+router.get(
+  "/students/range/:id/:from/:to",
+  roleMiddleware(["admin", "student"]),
+  senderDate
+);
+router.get("/students/today/:id", roleMiddleware(["student"]), getTotalToday);
+router.get(
+  "/cafe/:id",
+  roleMiddleware(["admin", "cafe"]),
+  getRecipientTransaction
+);
+router.get(
+  "/cafe/range/:id/:from/:to",
+  roleMiddleware(["admin", "cafe"]),
+  dateRange
+);
+router.post("/cafe/:id", roleMiddleware(["student"]), onPay);
+router.put("/approved", roleMiddleware(["cafe"]), checked);
+router.put("/claim/:from/:to", roleMiddleware(["admin"]), claim);
 
-module.exports = { transactionRouter };
+module.exports = router;

@@ -1,5 +1,6 @@
 const express = require("express");
-const passwordRouter = express.Router();
+const router = express.Router();
+const roleMiddleware = require("../middleware/rolebase");
 const {
   changeCafe,
   changeStudent,
@@ -7,7 +8,7 @@ const {
   checkStudent,
 } = require("../utils/passwordQuery");
 
-passwordRouter.put("/password/students/:id", async (req, res) => {
+router.put("/students/:id", roleMiddleware(["student"]), async (req, res) => {
   const { id } = req.params;
   const { currentPassword, newPassword } = req.body;
 
@@ -33,7 +34,7 @@ passwordRouter.put("/password/students/:id", async (req, res) => {
   }
 });
 
-passwordRouter.put("/password/cafe/:id", async (req, res) => {
+router.put("/cafe/:id", roleMiddleware(["cafe"]), async (req, res) => {
   const { id } = req.params;
   const { currentPassword, newPassword } = req.body;
 
@@ -58,4 +59,4 @@ passwordRouter.put("/password/cafe/:id", async (req, res) => {
   }
 });
 
-module.exports = passwordRouter;
+module.exports = router;

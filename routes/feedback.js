@@ -1,5 +1,6 @@
 const express = require("express");
-const feedbackRouter = express.Router();
+const router = express.Router();
+const roleMiddleware = require("../middleware/rolebase");
 
 const { sendFeedback, getFeedback } = require("../utils/feedbackQuery");
 
@@ -20,7 +21,7 @@ const onGetFeedback = (req, res) => {
     .catch(err => res.status(500).send(err));
 };
 
-feedbackRouter.post("/feedback", onFeedback);
-feedbackRouter.get("/feedback", onGetFeedback);
+router.post("/", roleMiddleware(["student", "cafe"]), onFeedback);
+router.get("/", roleMiddleware(["admin"]), onGetFeedback);
 
-module.exports = feedbackRouter;
+module.exports = router;

@@ -4,16 +4,23 @@ const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
-const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const helmet = require("helmet");
+const xssClean = require("xss-clean");
+const hpp = require("hpp");
 
+// Middleware
+const authenticateToken = require("./middleware/authToken");
+
+// Routes
 const authRouter = require("./routes/auth");
 const studentRouter = require("./routes/students");
 const cafeRouter = require("./routes/cafeOwners");
-const { transactionRouter } = require("./routes/transactions");
+const transactionRouter = require("./routes/transactions");
 const feedbackRouter = require("./routes/feedback");
 const passwordRouter = require("./routes/password");
 
+// Utils
 const {
   getSenderTransaction,
   getRecipientTransaction,
@@ -30,6 +37,10 @@ const io = new Server(httpServer, {
     origin: "*", // accept all client origin
   },
 });
+
+app.use(helmet());
+app.use(xssClean());
+app.use(hpp());
 
 app.use(cors({ origin: "*" }));
 
@@ -97,26 +108,13 @@ io.on("connect", socket => {
   socket.on("logout", async id => socket.leave(id));
 });
 
-const authenticateToken = (request, response, next) => {
-  const authHeader = request.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (token == null) return response.sendStatus(401);
-
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
-    if (error) return response.sendStatus(403);
-    request.user = user;
-    next();
-  });
-};
-
 app.use(authRouter);
 app.use(authenticateToken);
-app.use("/api", studentRouter);
-app.use("/api", cafeRouter);
-app.use("/api", transactionRouter);
-app.use("/api", feedbackRouter);
-app.use("/api", passwordRouter);
+app.use("/api/students", studentRouter);
+app.use("/api/cafe", cafeRouter);
+app.use("/api/transactions", transactionRouter);
+app.use("/api/feedback", feedbackRouter);
+app.use("/api/password", passwordRouter);
 
 httpServer.listen(port, () => {
   console.log(`app running on port ${port}`);

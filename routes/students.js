@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("./query");
+const roleMiddleware = require("../middleware/rolebase");
 
 const getStudents = (request, response) => {
   pool.query(
@@ -103,12 +104,12 @@ const countStudents = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
-router.get("/students", getStudents);
-router.get("/students/total", countStudents);
-router.get("/students/:id", getStudentsById);
-router.post("/students", createStudent);
-router.put("/students/:id/wallet", setWalletAmount);
-router.put("/students/:id/suspend", suspendStudents);
-router.delete("/students/:id/delete", deleteStudents);
+router.get("/", roleMiddleware(["admin", "cafe"]), getStudents);
+router.get("/total", roleMiddleware(["admin"]), countStudents);
+router.get("/:id", roleMiddleware(["admin"]), getStudentsById);
+router.post("/", roleMiddleware(["admin"]), createStudent);
+router.put("/:id/wallet", roleMiddleware(["admin"]), setWalletAmount);
+router.put("/:id/suspend", roleMiddleware(["admin"]), suspendStudents);
+router.delete("/:id/delete", roleMiddleware(["admin"]), deleteStudents);
 
 module.exports = router;

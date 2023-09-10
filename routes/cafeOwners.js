@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("./query");
+const roleMiddleware = require("../middleware/rolebase");
 
 const getCafe = (request, response) => {
   pool.query(
@@ -137,14 +138,18 @@ const countCafe = (req, res) => {
     .catch(err => res.status(500).json(err));
 };
 
-router.get("/cafe", getCafe);
-router.get("/cafe/total", countCafe);
-router.get("/cafe/account", getCafeAcc);
-router.get("/cafe/profile/:id", getProfile);
-router.put("/cafe/profile/:id", updateProfile);
-router.get("/cafe/:id", getCafeById);
-router.post("/cafe", createCafe);
-router.put("/cafe/:id/suspend", suspendCafe);
-router.get("/cafe/:id/transactions", getTransactions);
+router.get("/", roleMiddleware(["admin", "cafe", "student"]), getCafe);
+router.get("/total", roleMiddleware(["admin"]), countCafe);
+router.get("/account", roleMiddleware(["admin"]), getCafeAcc);
+router.get("/profile/:id", roleMiddleware(["admin", "cafe"]), getProfile);
+router.put("/profile/:id", roleMiddleware(["cafe"]), updateProfile);
+router.get("/:id", roleMiddleware(["admin", "cafe"]), getCafeById);
+router.post("/", roleMiddleware(["admin"]), createCafe);
+router.put("/:id/suspend", roleMiddleware(["admin"]), suspendCafe);
+router.get(
+  "/:id/transactions",
+  roleMiddleware(["admin", "cafe"]),
+  getTransactions
+);
 
 module.exports = router;
